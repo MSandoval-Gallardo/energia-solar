@@ -33,16 +33,31 @@ class SiteController extends Controller
     /**
      * {@inheritdoc}
      */
+   
+    
     public function behaviors(): array
     {
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['logout'],
                 'rules' => [
                     [
-                        'actions' => ['logout'],
                         'allow' => true,
+                        'actions' => [
+                            'index',
+                            'about',
+                            'contact',
+                            'login',
+                            'error',
+                            'captcha',
+                            'buscar-presupuesto',
+                            'reserva',
+                        ],
+                        'roles' => ['?', '@'],
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => ['logout'],
                         'roles' => ['@'],
                     ],
                 ],
@@ -51,6 +66,7 @@ class SiteController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'logout' => ['post'],
+                    'reserva' => ['post'],
                 ],
             ],
         ];
@@ -186,36 +202,59 @@ class SiteController extends Controller
         return $this->render('about');
     }
 
-        public function actionReserva()
+    public function actionReserva()
 {
     $model = new \app\models\Reserva();
 
     if ($model->load(Yii::$app->request->post())) {
 
-        $model->estado = 0;
-        $model->monto_reserva = 99990;
+        // Buscar presupuesto por código
+        $presupuesto = \app\models\Presupuesto::find()
+            ->where([
+                'codigo' => $model->presupuesto,
+                'estado' => 1,
+            ])
+            ->one();
 
+        // Verificar que el presupuesto exista
+        if ($presupuesto === null) {
+
+            Yii::$app->session->setFlash(
+                'error',
+                'El número de presupuesto ingresado no existe o no está disponible.'
+            );
+
+            return $this->redirect(['index', '#' => 'pago']);
+        }
+
+        // Asociar la reserva al presupuesto
+        $model->presupuesto_id = $presupuesto->id;
+
+        // Guardar el porcentaje configurado en el presupuesto
+        $model->porcentaje_reserva = $presupuesto->porcentaje_reserva;
+
+        // Guardar el monto calculado del presupuesto
+        $model->monto_reserva = $presupuesto->monto_reserva;
+
+        // Estado inicial
+        $model->estado = 0;
+
+        // Fechas de registro
         $now = date('Y-m-d H:i:s');
+
         $model->created_at = $now;
         $model->updated_at = $now;
 
-        // Por ahora usamos una fecha y hora provisionales.
-        // Luego las reemplazaremos por la fecha/hora real de la evaluación.
+        // Por ahora usamos fecha y hora provisionales
         $model->fecha = date('Y-m-d');
         $model->hora = date('H:i:s');
 
-        // if ($model->save()) {
-        //     Yii::$app->session->setFlash(
-        //         'success',
-        //         'Tu solicitud de reserva fue enviada correctamente.'
-        //     );
-
-        //     return $this->redirect(['index', '#' => 'pago']);
-        // }
         if ($model->save()) {
+
             Yii::$app->session->setFlash(
                 'success',
-                'Tu solicitud de reserva fue enviada correctamente.'
+                'Tu solicitud de reserva fue enviada correctamente. Monto de reserva: $' .
+                number_format($model->monto_reserva, 0, ',', '.')
             );
 
             return $this->redirect(['index', '#' => 'pago']);
@@ -223,13 +262,48 @@ class SiteController extends Controller
 
         Yii::$app->session->setFlash(
             'error',
-            'No fue posible guardar la reserva: ' . implode(' | ', $model->getFirstErrors())
+            'No fue posible guardar la reserva: ' .
+            implode(' | ', $model->getFirstErrors())
         );
 
         return $this->redirect(['index', '#' => 'pago']);
-            }
+    }
 
-    // Si existe un error de validación, volvemos al inicio.
     return $this->redirect(['index', '#' => 'pago']);
 }
+    public function actionBuscarPresupuesto($codigo)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $codigo = trim($codigo);
+
+        if ($codigo === '') {
+            return [
+                'success' => false,
+                'message' => 'Ingresa un número de presupuesto.',
+            ];
+        }
+
+        $presupuesto = \app\models\Presupuesto::find()
+            ->where([
+                'codigo' => $codigo,
+                'estado' => 1,
+            ])
+            ->one();
+
+        if ($presupuesto === null) {
+            return [
+                'success' => false,
+                'message' => 'El presupuesto no existe o no está disponible.',
+            ];
+        }
+
+        return [
+            'success' => true,
+            'codigo' => $presupuesto->codigo,
+            'monto_total' => $presupuesto->monto_total,
+            'porcentaje_reserva' => $presupuesto->porcentaje_reserva,
+            'monto_reserva' => $presupuesto->monto_reserva,
+        ];
+    }
 }

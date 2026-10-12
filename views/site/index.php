@@ -7,7 +7,7 @@ use yii\helpers\Json;
 /** @var app\models\Fotografia[] $fotografias */
 /** @var app\models\Video[] $videos */
 
-$this->title = 'Allan Mariscal · Energía Solar con Garantía';
+$this->title = 'Alfima · Energía Solar con Garantía';
 
 $galleryImages = [];
 foreach ($fotografias as $fotografia) {
@@ -55,7 +55,7 @@ function youtubeEmbedUrl(string $url): ?string
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Allan Mariscal · Energía Solar con Garantía</title>
+    <title>Alfima · Energía Solar con Garantía</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
     <style>
         /* ===== RESET & BASE ===== */
@@ -447,6 +447,7 @@ function youtubeEmbedUrl(string $url): ?string
             border: 2px solid #e2e8f0;
             border-radius: 12px;
             font-size: 1rem;
+            color:#1a1919;
             transition: 0.2s;
             background: #fff;
         }
@@ -621,7 +622,7 @@ function youtubeEmbedUrl(string $url): ?string
             height: 60px;
             border-radius: 50%;
             background: #25d366;
-            color: #fff;
+            color: #1a1919;
             display: grid;
             place-items: center;
             font-size: 1.6rem;
@@ -691,7 +692,7 @@ function youtubeEmbedUrl(string $url): ?string
                 /* Degradado oscuro para legibilidad */
                 linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.70)),
                 /* Tu imagen */
-                url('<?= Yii::getAlias('@web/img/panel1a.jpeg') ?>');
+                url('<?= Yii::getAlias('@web/images/hero.jpeg') ?>');
             
             background-size: cover;
             background-position: center;
@@ -1075,7 +1076,7 @@ function youtubeEmbedUrl(string $url): ?string
     <div class="container">
         <a class="brand" href="#inicio">
             <span class="brand-mark">☀</span>
-            Allan Mariscal
+            Alfima
         </a>
 
         <!-- Botón hamburguesa (visible solo en móvil) -->
@@ -1086,11 +1087,14 @@ function youtubeEmbedUrl(string $url): ?string
         </button>
 
         <nav class="nav-links" id="navLinks">
-            <a href="#proyectos">Proyectos</a>
-            <a href="#funciona">Cómo funciona</a>
             <a href="#garantias">Garantías</a>
             <a href="#galeria">Galeria</a>
             <a href="#videos">Videos</a>
+            <a href="#proyectos">Proyectos</a>
+            <a href="#funciona">Cómo funciona</a>
+            
+            
+            
             <a href="#asesoria">Asesoría</a>
             <a class="btn-nav" href="#pago">Reservar ahora</a>
         </nav>
@@ -1121,7 +1125,7 @@ function youtubeEmbedUrl(string $url): ?string
                 </div>
             </div>
             <div class="reveal">
-                <!-- <img src="<?= Yii::getAlias('@web/img/panel1a.jpeg') ?>" alt="Ilustración de energía solar" style="border-radius:20px; width:100%;" /> -->
+                <!-- <img src="<?= Yii::getAlias('@web/images/logo1.jpeg') ?>" alt="Ilustración de energía solar" style="border-radius:20px; width:100%;" /> -->
             </div>
         </div>
     </section>
@@ -1413,8 +1417,14 @@ function youtubeEmbedUrl(string $url): ?string
                             id="presupuesto"
                             name="Reserva[presupuesto]"
                             placeholder="Ej: SB342"
+                            autocomplete="off"
+                            required
                             value="<?= \yii\helpers\Html::encode($reserva->presupuesto) ?>"
                         />
+                        <div
+                            id="presupuestoMensaje"
+                            style="margin-top:8px; font-size:0.9rem;"
+                        ></div>
                     </div>
 
                     <div class="form-row">
@@ -1456,13 +1466,33 @@ function youtubeEmbedUrl(string $url): ?string
                     </div>
 
                     <div class="payment-summary">
-                        <span class="label">💡 Reserva (50% del presupuesto)</span>
-                        <span class="amount">$99.990 <small>CLP</small></span>
+                        <span class="label" id="reservaLabel">
+                            💡 Reserva
+                        </span>
+
+                        <span class="amount" id="reservaMonto">
+                            $0 <small>CLP</small>
+                        </span>
+                    </div>
+
+                    <div
+                        id="presupuestoDetalle"
+                        style="margin-top:10px; text-align:center; display:none;"
+                    >
+                        <small>
+                            Presupuesto total:
+                            <strong id="presupuestoTotal">$0</strong>
+                            <br>
+                            Reserva:
+                            <strong id="presupuestoPorcentaje">0%</strong>
+                        </small>
                     </div>
 
                     <button type="submit" class="btn-pay">
                         <i class="fa-solid fa-lock"></i>
-                        Pagar $99.990 con Webpay
+                        Pagar
+                        <span id="botonMontoReserva"></span>
+                        con Webpay
                     </button>
 
                     <div class="payment-footer">
@@ -1524,6 +1554,95 @@ function youtubeEmbedUrl(string $url): ?string
                 });
             }, { threshold: 0.15 });
             items.forEach(el => observer.observe(el));
+        });
+        // ===== CONSULTA DE PRESUPUESTO =====
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const presupuestoInput = document.getElementById('presupuesto');
+            const presupuestoMensaje = document.getElementById('presupuestoMensaje');
+            const presupuestoDetalle = document.getElementById('presupuestoDetalle');
+            const presupuestoTotal = document.getElementById('presupuestoTotal');
+            const presupuestoPorcentaje = document.getElementById('presupuestoPorcentaje');
+            const reservaLabel = document.getElementById('reservaLabel');
+            const reservaMonto = document.getElementById('reservaMonto');
+            const botonMontoReserva = document.getElementById('botonMontoReserva');
+
+            let temporizador;
+
+            presupuestoInput.addEventListener('input', function () {
+
+                clearTimeout(temporizador);
+
+                const codigo = this.value.trim();
+
+                presupuestoMensaje.textContent = '';
+                presupuestoDetalle.style.display = 'none';
+                reservaMonto.innerHTML = '$0 <small>CLP</small>';
+                reservaLabel.textContent = '💡 Reserva';
+                botonMontoReserva.textContent = '';
+
+                if (codigo.length < 2) {
+                    return;
+                }
+
+                temporizador = setTimeout(function () {
+
+                    fetch(
+                        '<?= \yii\helpers\Url::to(['site/buscar-presupuesto'], true) ?>' +
+                        '&codigo=' +
+                        encodeURIComponent(codigo)
+                    )
+                    .then(response => response.json())
+                    .then(data => {
+
+                        if (!data.success) {
+
+                            presupuestoMensaje.textContent = data.message;
+                            presupuestoMensaje.style.color = '#dc3545';
+
+                            return;
+                        }
+
+                        const montoTotal = Number(data.monto_total);
+                        const montoReserva = Number(data.monto_reserva);
+                        const porcentaje = Number(data.porcentaje_reserva);
+
+                        const formatoPesos = new Intl.NumberFormat('es-CL');
+
+                        presupuestoMensaje.textContent =
+                            '✓ Presupuesto encontrado';
+
+                        presupuestoMensaje.style.color = '#198754';
+
+                        presupuestoTotal.textContent =
+                            '$' + formatoPesos.format(montoTotal);
+
+                        presupuestoPorcentaje.textContent =
+                            porcentaje + '%';
+
+                        reservaLabel.textContent =
+                            '💡 Reserva (' + porcentaje + '% del presupuesto)';
+
+                        reservaMonto.innerHTML =
+                            '$' + formatoPesos.format(montoReserva) +
+                            ' <small>CLP</small>';
+                            botonMontoReserva.textContent =
+                            ' $' + formatoPesos.format(montoReserva);
+
+                        presupuestoDetalle.style.display = 'block';
+
+                    })
+                    .catch(function () {
+
+                        presupuestoMensaje.textContent =
+                            'No fue posible consultar el presupuesto.';
+
+                        presupuestoMensaje.style.color = '#dc3545';
+
+                    });
+
+                }, 400);
+            });
         });
 
         // ===== FORMULARIO =====

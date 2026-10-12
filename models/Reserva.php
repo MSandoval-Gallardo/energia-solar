@@ -3,6 +3,7 @@
 namespace app\models;
 
 use yii\db\ActiveRecord;
+use app\models\Presupuesto;
 
 class Reserva extends ActiveRecord
 {
@@ -69,5 +70,9 @@ class Reserva extends ActiveRecord
             2 => 'Cancelada',
             default => 'Desconocido',
         };
+    }
+    public function getPresupuesto()
+    {
+        return $this->hasOne(Presupuesto::class, ['id' => 'presupuesto_id']);
     }
 }

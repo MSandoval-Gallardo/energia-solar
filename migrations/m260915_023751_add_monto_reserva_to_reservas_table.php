@@ -26,4 +26,4 @@ class m260915_023751_add_monto_reserva_to_reservas_table extends Migration
     {
         $this->dropColumn('{{%reservas}}', 'monto_reserva');
     }
-}
+}   
