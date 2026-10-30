@@ -7,6 +7,14 @@ return [
     'password' => 'EmVi1985$$',
     'charset' => 'utf8mb4',
 
+    //****hacia el servidor****
+    // 'class' => 'yii\db\Connection',
+    // 'dsn' => 'mysql:host=localhost;dbname=alfimacl_energia_solar;port=3307',
+    // 'username' => 'alfimacl_alfimacl',
+    // 'password' => 'EmVi1985$$$',
+    // 'charset' => 'utf8mb4',
+    //****hacia el servidor****
+
     // 'class' => 'yii\db\Connection',
     // 'dsn' => 'mysql:host=localhost;dbname=energia_solar',
     // 'username' => 'energia_solar_app',

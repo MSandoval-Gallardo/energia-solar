@@ -622,7 +622,7 @@ function youtubeEmbedUrl(string $url): ?string
             height: 60px;
             border-radius: 50%;
             background: #25d366;
-            color: #1a1919;
+            color: #fdfbfb;
             display: grid;
             place-items: center;
             font-size: 1.6rem;
@@ -1074,9 +1074,9 @@ function youtubeEmbedUrl(string $url): ?string
     <!-- ===== TOPBAR ===== -->
     <header class="topbar">
     <div class="container">
-        <a class="brand" href="#inicio">
-            <span class="brand-mark">☀</span>
-            Alfima
+        <a class="brand" href="#inicio" style="display: flex; align-items: center; gap: 10px;">
+            <img src="<?= Yii::getAlias('@web/images/logo4.png') ?>" alt="Alfima Logo" style="height: 45px; width: auto;" />
+            <span style="font-weight: 800; font-size: 1.2rem; color: #0b2b44;">Energía renovable</span>
         </a>
 
         <!-- Botón hamburguesa (visible solo en móvil) -->
@@ -1515,9 +1515,9 @@ function youtubeEmbedUrl(string $url): ?string
     <footer class="footer" id="contacto">
         <div class="container footer-grid">
             <div>
-                <p class="brand-footer">☀ Allan Mariscal</p>
-                <p style="margin:8px 0 16px;">Instalación de paneles solares, inversores híbridos y baterías de respaldo para hogares y empresas.</p>
-                <p style="font-size:0.8rem; opacity:0.6;">Aviso de privacidad: tus datos se usan solo para responder consultas y preparar evaluaciones técnicas.</p>
+    <img src="<?= Yii::getAlias('@web/images/logo-mono.png') ?>" alt="Alfima Logo" style="height: 50px; width: auto; margin-bottom: 12px; opacity: 0.9;" />
+    <p class="brand-footer" style="margin-top: 5px;">Allan Mariscal</p>
+    <p style="margin:8px 0 16px;">Instalación de paneles solares</p>
             </div>
             <div>
                 <h3>Contacto</h3>
